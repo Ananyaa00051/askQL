@@ -1,10 +1,10 @@
-# QueryPilot AI
+# askQL
 
 Ask your business a question in plain English. Get SQL, a chart, a plain-English
 explanation, and suggested follow-up questions — with a self-correcting agent
 underneath and a read-only safety layer so it can never touch your data.
 
-This is a working, simplified build of the full QueryPilot AI spec, tuned to
+This is a working, simplified build of the full askQL spec, tuned to
 run on one laptop with a single LangGraph workflow instead of a distributed
 system. Everything in the "Simplified vs. spec" section below is a deliberate
 cut to keep the code readable — the architecture is built so you can add each
@@ -42,8 +42,8 @@ inspect or swap any one of them independently.
 
 ## Project layout
 
-```
-querypilot-ai/
+```text
+askQL/
   app/
     config.py       # env vars
     database.py      # SQLite connector + schema introspection + query executor
@@ -53,8 +53,8 @@ querypilot-ai/
     llm.py            # thin Anthropic API wrapper (text / JSON / SQL helpers)
     nodes.py           # the 9 LangGraph node functions
     graph.py            # wires the nodes into the StateGraph above
-  main.py              # FastAPI backend (`/ask` endpoint + session memory)
-  streamlit_app.py     # chat UI with charts, SQL inspector, follow-up buttons
+  main.py              # FastAPI backend (`/ask`, `/upload`, `/schema` endpoints)
+  streamlit_app.py     # chat UI with charts, multi-file uploads, SQL inspector, follow-ups
   seed_db.py           # creates a demo SQLite DB (customers/sales/invoices/campaigns)
   requirements.txt
   .env.example
@@ -97,12 +97,15 @@ Open the Streamlit URL it prints (usually http://localhost:8501) and try:
 | Spec feature | Where it lives |
 |---|---|
 | NL → SQL | `nodes.generate_sql` + `prompts.SQL_GENERATION_PROMPT` |
+| Semantic SQL Retrieval | Finance, campaign, and variance queries are dynamically prompted to fetch full conceptual context (`prompts.SQL_GENERATION_PROMPT`). |
 | Automatic SQL repair | `nodes.repair_sql` + `retry_router` (loops back to `validate`, capped by `MAX_RETRIES`) |
-| Schema understanding | `database.get_full_schema` — see note below on scaling this |
+| Schema understanding | `database.get_full_schema` — supports multi-file uploads natively. |
+| Strict Grounding Validation | `nodes.interpret_results` dynamically validates if the SQL output contained enough columns. If missing data, it routes back to `repair_sql` via `interpretation_router`. |
 | Business interpretation | `nodes.interpret_results` |
 | Auto visualization | `nodes.generate_chart` picks line/bar/pie/table; rendered with Plotly in Streamlit |
 | Follow-up questions | `nodes.generate_followups`, rendered as clickable buttons |
 | Query memory | `main.py`'s `SESSIONS` dict, passed into the prompt as `chat_history` |
+| Custom Data Uploads | Dynamic DataFrame loading (`streamlit_app.py`), appending to a unified SQLite `_session.db` (`main.py`) across `.csv` and `.xlsx` files. |
 | Explanation mode | The Streamlit "Generated SQL & execution details" expander shows SQL, row count, and repair attempts on every answer |
 | SQL safety layer | `security.validate_sql` — hard-blocks anything that isn't a single `SELECT`/`WITH` statement |
 | Ambiguity detection | `nodes.detect_intent` returns `needs_clarification`, which short-circuits the graph straight to a clarifying question |
