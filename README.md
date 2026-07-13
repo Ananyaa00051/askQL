@@ -12,7 +12,6 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge\&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge\&logo=fastapi)
 ![LangGraph](https://img.shields.io/badge/LangGraph-Agent-purple?style=for-the-badge)
-![Claude](https://img.shields.io/badge/Claude-Sonnet-orange?style=for-the-badge)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-blue?style=for-the-badge\&logo=sqlite)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-red?style=for-the-badge\&logo=streamlit)
 ![Plotly](https://img.shields.io/badge/Plotly-Visualization-3F4F75?style=for-the-badge\&logo=plotly)
